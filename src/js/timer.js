@@ -1,83 +1,50 @@
-// Создай плагин настраиваемого таймера, который ведет обратный отсчет до предварительно определенной даты.
-// Такой плагин может использоваться в блогах и интернет-магазинах, страницах регистрации событий,
-// во время технического обслуживания и т. д.
-
 class CountdownTimer {
   constructor({ selector, targetDate }) {
-    this.selector = selector;
     this.targetDate = targetDate;
-    this.refs = {
-      daysSpan: document.querySelector('span[data-value="days"]'),
-      hoursSpan: document.querySelector('span[data-value="hours"]'),
-      minutesSpan: document.querySelector('span[data-value="mins"]'),
-      secondsSpan: document.querySelector('span[data-value="secs"]'),
-    };
+    this.timer = document.getElementById(selector);
+    this.days = this.timer.querySelector('span[data-value="days"]');
+    this.hours = this.timer.querySelector('span[data-value="hours"]');
+    this.mins = this.timer.querySelector('span[data-value="mins"]');
+    this.secs = this.timer.querySelector('span[data-value="secs"]');
+  }
 
-    this.startTimer = function() {
-      const remainingTime =
-        Date.parse(this.targetDate) - Date.parse(new Date());
-      const convertedRemainingData = this.convertTimeStandartValues(
-        remainingTime,
-      );
-      this.updateFrontRepresentation(convertedRemainingData);
-    };
 
-    this.convertTimeStandartValues = function(remainingTimeInMilliseconds) {
-      const secs = Math.floor(
-        (remainingTimeInMilliseconds % (1000 * 60)) / 1000,
-      );
-      const mins = Math.floor(
-        (remainingTimeInMilliseconds % (1000 * 60 * 60)) / (1000 * 60),
-      );
-      const hours = Math.floor(
-        (remainingTimeInMilliseconds % (1000 * 60 * 60 * 24)) /
-          (1000 * 60 * 60),
-      );
-      const days = Math.floor(
-        remainingTimeInMilliseconds / (1000 * 60 * 60 * 24),
-      );
-      return {
-        remainingTime: remainingTimeInMilliseconds,
-        days: days,
-        hours: hours,
-        minutes: mins,
-        seconds: secs,
-      };
-    };
+  start() {
+    this.updateTimerOutput();
+    setInterval(() => {
+      this.updateTimerOutput();
+    }, 1000);
+  }
 
-    this.updateFrontRepresentation = function(convertRemainingTimeData) {
-      let tmpRamainingDataObj = convertRemainingTimeData;
-      let intervalId = setInterval(() => {
-        (this.refs.daysSpan.innerHTML = this.pad(tmpRamainingDataObj.days)),
-          (this.refs.hoursSpan.innerHTML = this.pad(tmpRamainingDataObj.hours)),
-          (this.refs.minutesSpan.innerHTML = this.pad(tmpRamainingDataObj.minutes)),
-          (this.refs.secondsSpan.innerHTML = this.pad(tmpRamainingDataObj.seconds));
+  updateTimerOutput() {
+    let time = this.targetDate - Date.now();
+    const { days, hours, mins, secs } = this.calculateTime(time);
+    this.days.textContent = days;
+    this.hours.textContent = hours;
+    this.mins.textContent = mins;
+    this.secs.textContent = secs;
+  }
 
-        tmpRamainingDataObj = this.convertTimeStandartValues(
-          tmpRamainingDataObj.remainingTime - 1000,
-        );
 
-        if (tmpRamainingDataObj.remainingTime < 0) {
-          clearInterval(intervalId);
-        }
-      }, 1000);
-    };
+  calculateTime(time) {
+    const days = this.pad(Math.floor(time / (1000 * 60 * 60 * 24)));
+    const hours = this.pad(
+      Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    );
+    const mins = this.pad(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)));
+    const secs = this.pad(Math.floor((time % (1000 * 60)) / 1000));
 
-    this.pad = function(value) {
-      return String(value).padStart(2, '0');
-    };
+    return { days, hours, mins, secs };
+  }
+
+  pad(value) {
+    return String(value).padStart(2, "0");
   }
 }
 
-// Comment: new Date(year, month, date, hours, minutes, seconds, ms)
-// let timer01 = new CountdownTimer({
-//   selector: '#timer-1',
-//   targetDate: new Date(2019, 5, 28, 15, 55, 40, 0),
-// });
-
-let timer01 = new CountdownTimer({
-  selector: '#timer-1',
-  targetDate: new Date('Jul 28, 2019'),
+const countNewYear = new CountdownTimer({
+  selector: "timer-1",
+  targetDate: new Date("Jan 1, 2021"),
 });
 
-timer01.startTimer();
+countNewYear.start();
